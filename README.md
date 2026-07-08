@@ -6,6 +6,7 @@ Terraform module to create one or more AWS EBS volumes for Windows EC2 instances
 
 - Create a single EBS volume with simple top-level inputs
 - Create multiple EBS volumes with `ebs_volumes`
+- Optionally attach each volume to one or more EC2 instances
 - Apply default `account`, `environment`, and `repo` tags to every volume
 - Add optional SQL-related tags: `sql_cluster_name`, `sql_instance_name`, and `sql_vnn`
 - Tag each volume with `drive_letter` and `windows_description`
@@ -25,6 +26,8 @@ module "ebs_volume" {
   ebs_availability_zone   = "us-east-1a"
   ebs_drive_letter        = "F"
   ebs_windows_description = "SQLDATA"
+  ebs_device_name         = "/dev/sdf"
+  ebs_instance_id         = "i-0123456789abcdef0"
 }
 ```
 
@@ -47,6 +50,7 @@ module "ebs_volumes" {
       availability_zone   = "us-east-1a"
       drive_letter        = "F"
       windows_description = "SQLDATA"
+      device_name         = "/dev/sdf"
       size                = 500
     },
     {
@@ -54,6 +58,8 @@ module "ebs_volumes" {
       availability_zone   = "us-east-1a"
       drive_letter        = "Q"
       windows_description = "QUORUM"
+      device_name         = "/dev/sdg"
+      instance_ids        = ["i-0123456789abcdef0", "i-0fedcba9876543210"]
       type                = "io2"
       iops                = 4000
       shared              = true
@@ -80,13 +86,18 @@ module "ebs_volumes" {
 | `ebs_drive_letter` | Windows drive letter for a single EBS volume. | `string` | `null` |
 | `ebs_windows_description` | Windows description such as drive letter or mount point for a single EBS volume. | `string` | `null` |
 | `ebs_availability_zone` | Availability zone for a single EBS volume. | `string` | `null` |
+| `ebs_device_name` | EC2 device name to use when attaching a single EBS volume. Required when setting `ebs_instance_id` or `ebs_instance_ids`. | `string` | `null` |
+| `ebs_instance_id` | EC2 instance ID to attach a single EBS volume to. | `string` | `null` |
+| `ebs_instance_ids` | EC2 instance IDs to attach a single EBS volume to. Set `ebs_shared = true` when attaching to multiple instances. | `list(string)` | `[]` |
 | `ebs_shared` | Whether a single EBS volume is shared between EC2 hosts. Shared volumes must use `io1` or `io2`. | `bool` | `false` |
-| `ebs_volumes` | List of EBS volumes to create. When provided, this takes precedence over the single-volume inputs. | `list(object(...))` | `[]` |
+| `ebs_volumes` | List of EBS volumes to create. Each object can also include optional `device_name`, `instance_id`, and `instance_ids` attachment settings. When provided, this takes precedence over the single-volume inputs. | `list(object(...))` | `[]` |
 
 ## Outputs
 
 | Name | Description |
 | --- | --- |
+| `attachment_ids` | Map of volume attachments keyed by volume name and instance ID. |
+| `attachments` | Details for the EBS volume attachments created by this module. |
 | `volume_ids` | Map of EBS volume names to volume IDs. |
 | `volume_arns` | Map of EBS volume names to volume ARNs. |
 | `volumes` | Details for the EBS volumes created by this module. |
