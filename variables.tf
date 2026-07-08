@@ -85,6 +85,24 @@ variable "ebs_availability_zone" {
   default     = null
 }
 
+variable "ebs_device_name" {
+  description = "EC2 device name to use when attaching a single EBS volume."
+  type        = string
+  default     = null
+}
+
+variable "ebs_instance_id" {
+  description = "EC2 instance ID to attach a single EBS volume to."
+  type        = string
+  default     = null
+}
+
+variable "ebs_instance_ids" {
+  description = "EC2 instance IDs to attach a single EBS volume to."
+  type        = list(string)
+  default     = []
+}
+
 variable "ebs_shared" {
   description = "Whether a single EBS volume is shared between EC2 hosts."
   type        = bool
@@ -98,6 +116,9 @@ variable "ebs_volumes" {
     availability_zone   = string
     drive_letter        = string
     windows_description = string
+    device_name         = optional(string)
+    instance_id         = optional(string)
+    instance_ids        = optional(list(string), [])
     shared              = optional(bool, false)
     type                = optional(string, "gp3")
     iops                = optional(number, 3000)

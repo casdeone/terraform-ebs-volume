@@ -22,3 +22,20 @@ output "volumes" {
     }
   }
 }
+
+output "attachment_ids" {
+  description = "Map of volume attachments keyed by volume name and instance ID."
+  value       = { for name, attachment in aws_volume_attachment.this : name => attachment.id }
+}
+
+output "attachments" {
+  description = "Details for the EBS volume attachments created by this module."
+  value = {
+    for name, attachment in aws_volume_attachment.this : name => {
+      id          = attachment.id
+      device_name = attachment.device_name
+      instance_id = attachment.instance_id
+      volume_id   = attachment.volume_id
+    }
+  }
+}
